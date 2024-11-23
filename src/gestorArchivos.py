@@ -1,5 +1,4 @@
 import pandas as pd
-from consolidado import Consolidado
 
 class GestorArchivos:
     def __init__(self):
@@ -24,30 +23,31 @@ class GestorArchivos:
                 dict_programas_academicos[cod_snies].programa_academico = df_filtrado.iloc[:, :index_columna_inicio_exclusion]
 
             if anio not in dict_programas_academicos[cod_snies].dict_consolidados.keys():
-                consolidado_actual_obj = Consolidado()
-                consolidado_actual_obj.consolidado = df_filtrado.iloc[:, index_columna_inicio_exclusion:]
-                consolidado_actual_obj.consolidado = consolidado_actual_obj.consolidado.reset_index(drop=True)
-                dict_programas_academicos[cod_snies].dict_consolidados[anio] = consolidado_actual_obj
+                consolidado_actual = df_filtrado.iloc[:, index_columna_inicio_exclusion:]
+                consolidado_actual = consolidado_actual.reset_index(drop=True)
+
+                dict_programas_academicos[cod_snies].dict_consolidados[anio] = consolidado_actual
 
 
         for cod_snies in list_cod_snies:
             df_filtrado = df[df["CÓDIGO SNIES DEL PROGRAMA"] == cod_snies]
             df_filtrado = df_filtrado.reset_index(drop=True)
 
-            if atributo_del_archivo == "admitidos":
-                dict_programas_academicos[cod_snies].dict_consolidados[anio].consolidado.loc[:, "ADMITIDOS"] = df_filtrado.loc[:, "ADMITIDOS"]
 
             if atributo_del_archivo == "inscritos":
-                dict_programas_academicos[cod_snies].dict_consolidados[anio].consolidado.loc[:, "INSCRITOS"] = df_filtrado["INSCRITOS"]
+                dict_programas_academicos[cod_snies].dict_consolidados[anio].loc[:, "INSCRITOS"] = df_filtrado["INSCRITOS"]
+
+            if atributo_del_archivo == "admitidos":
+                dict_programas_academicos[cod_snies].dict_consolidados[anio].loc[:, "ADMITIDOS"] = df_filtrado.loc[:, "ADMITIDOS"]
 
             if atributo_del_archivo == "matriculados":
-                dict_programas_academicos[cod_snies].dict_consolidados[anio].consolidado.loc[:, "MATRICULADOS"] = df_filtrado.loc[:, "MATRICULADOS"]
+                dict_programas_academicos[cod_snies].dict_consolidados[anio].loc[:, "MATRICULADOS"] = df_filtrado.loc[:, "MATRICULADOS"]
 
             if atributo_del_archivo == "matriculadosPrimerSemestre":
-                dict_programas_academicos[cod_snies].dict_consolidados[anio].consolidado.loc[:, "PRIMER CURSO"] = df_filtrado.loc[:, "PRIMER CURSO"]
+                dict_programas_academicos[cod_snies].dict_consolidados[anio].loc[:, "PRIMER CURSO"] = df_filtrado.loc[:, "PRIMER CURSO"]
 
             if atributo_del_archivo == "graduados":
-                dict_programas_academicos[cod_snies].dict_consolidados[anio].consolidado.loc[:, "GRADUADOS"] = df_filtrado.loc[:, "GRADUADOS"]
+                dict_programas_academicos[cod_snies].dict_consolidados[anio].loc[:, "GRADUADOS"] = df_filtrado.loc[:, "GRADUADOS"]
 
 
     def exportar_archivo(self, dict_programas_academicos):
@@ -60,8 +60,7 @@ class GestorArchivos:
 
             lista_consolidados_a_combinar = []
 
-            for anio, consolidado_obj in dict_programas_academicos[cod_prog_actual].dict_consolidados.items():
-                df_consolidado_actual = consolidado_obj.consolidado
+            for anio, df_consolidado_actual in dict_programas_academicos[cod_prog_actual].dict_consolidados.items():
                 print(f"El consolidado actual es del ano: {anio}")
                 lista_consolidados_a_combinar.append(df_consolidado_actual)
 
@@ -69,9 +68,6 @@ class GestorArchivos:
 
             num_consolidados = len(lista_consolidados_a_combinar)
             df_programa_academico_repetido = pd.concat( [dict_programas_academicos[cod_prog_actual].programa_academico] * num_consolidados, ignore_index=True )
-
-            # df_consolidados_final = df_consolidados_final.reset_index(drop=True)
-            # df_programa_academico_repetido = df_programa_academico_repetido.reset_index(drop=True)
 
             df_programa_academico_final = pd.concat( [df_programa_academico_repetido, df_consolidados_por_programa], axis = 1)
 
