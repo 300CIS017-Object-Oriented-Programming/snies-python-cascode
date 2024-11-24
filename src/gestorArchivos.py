@@ -32,6 +32,7 @@ class GestorArchivos:
         for cod_snies in list_cod_snies:
             df_filtrado = df[df["CÓDIGO SNIES DEL PROGRAMA"] == cod_snies]
             df_filtrado = df_filtrado.reset_index(drop=True)
+            df_filtrado = self.cambiar_nombre_sexo(df_filtrado)
 
 
             if atributo_del_archivo == "inscritos":
@@ -69,7 +70,7 @@ class GestorArchivos:
             num_consolidados = len(lista_consolidados_a_combinar)
             df_programa_academico_repetido = pd.concat( [dict_programas_academicos[cod_prog_actual].programa_academico] * num_consolidados, ignore_index=True )
 
-            df_programa_academico_final = pd.concat( [df_programa_academico_repetido, df_consolidados_por_programa], axis = 1)
+            df_programa_academico_final = pd.concat( [df_programa_academico_repetido, df_consolidados_por_programa], axis = 1 )
 
             lista_programas_academicos_a_combinar.append(df_programa_academico_final)
 
@@ -85,4 +86,8 @@ class GestorArchivos:
         df.dropna(subset=["CÓDIGO SNIES DEL PROGRAMA"], inplace=True)
         df["CÓDIGO SNIES DEL PROGRAMA"] = df["CÓDIGO SNIES DEL PROGRAMA"].astype("int64")
 
+        return df
+
+    def cambiar_nombre_sexo(self, df):
+        df["SEXO"] = df["SEXO"].replace({'Femenino':'Mujer', 'Masculino':'Hombre'})
         return df

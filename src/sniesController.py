@@ -1,11 +1,10 @@
 from gestorArchivos import GestorArchivos
-from src.programaAcademico import ProgramaAcademico
+from programaAcademico import ProgramaAcademico
 
 class SniesController:
     def __init__(self):
 
         pass
-
 
 
     def procesarDatos(self, ANIO_INICIO, ANIO_FINAL, LISTA_COD_SNIES):
