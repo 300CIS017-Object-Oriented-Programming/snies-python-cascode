@@ -1,5 +1,5 @@
-from src.view import Menu
+from view import Menu
 
-interfaz = Menu()
-
-
+if __name__ == "__main__":
+    interfaz = Menu()
+    interfaz.mostrar_interfaz()
