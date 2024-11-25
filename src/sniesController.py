@@ -1,5 +1,7 @@
 from gestorArchivos import GestorArchivos
 from programaAcademico import ProgramaAcademico
+import os
+import shutil
 
 class SniesController:
     def __init__(self):
