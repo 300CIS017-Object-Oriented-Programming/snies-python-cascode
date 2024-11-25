@@ -51,7 +51,7 @@ class GestorArchivos:
                 dict_programas_academicos[cod_snies].dict_consolidados[anio].loc[:, "GRADUADOS"] = df_filtrado.loc[:, "GRADUADOS"]
 
 
-    def exportar_archivo(self, dict_programas_academicos):
+    def generar_df_consolidado(self, dict_programas_academicos):
 
         # FIXME: manejar casos en los que algo esté vacío
 
@@ -75,8 +75,8 @@ class GestorArchivos:
 
         df_final = pd.concat(lista_programas_academicos_a_combinar, ignore_index=True)
 
-        # FIXME: MANEJAR EL CASO EN QUE PROBABLEENTE ESTÉ VACÍO EL DATAFRAME
         df_final.to_excel("Resultados.xlsx")
+        return df_final
 
     def convertir_columna_to_int64(self, df):
         df["CÓDIGO SNIES DEL PROGRAMA"] = df["CÓDIGO SNIES DEL PROGRAMA"].astype(str).str.strip()
