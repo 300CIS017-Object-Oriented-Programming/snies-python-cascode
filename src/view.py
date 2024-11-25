@@ -8,6 +8,12 @@ class Menu:
     def __init__(self):
         self.controladorSnies = SniesController()
 
+        self.archivos_predeterminados = self.controladorSnies.listar_archivos_predeterminados()
+        [anio_min, anio_max] = self.controladorSnies.obtener_anio_minimo_y_maximo(self.archivos_predeterminados)
+
+        self.ANIO_INICIO = anio_min
+        self.ANIO_FINAL = anio_max
+
     def mostrar_interfaz(self):
         st.set_page_config(page_title="Gestor SNIES", layout="wide")
         st.sidebar.title("Navegación")
@@ -25,9 +31,10 @@ class Menu:
         st.title("Carga de Archivos")
         # Mostrar archivos predeterminados
         st.subheader("Archivos Cargados Predeterminados (Últimos 4 años)")
-        archivos_predeterminados = self.controladorSnies.listar_archivos_predeterminados()
-        if archivos_predeterminados:
-            for archivo in archivos_predeterminados:
+
+
+        if self.archivos_predeterminados:
+            for archivo in self.archivos_predeterminados:
                 st.write(f"✔️ {archivo}")
         else:
             st.write("No hay archivos disponibles.")
@@ -54,13 +61,15 @@ class Menu:
                          ":nerd_face:, puede que su Programa Académico esté guardado con ellas. :stuck_out_tongue_winking_eye:")
 
         st.sidebar.title('Entrada de datos para el procesamiento')
-        #FIXME: CAMBIAR LAS FECHAS MÁXIMAS Y MÍNIMAS SEGÚN LOS ARCHIVOS QUE HAYAN CARGADOS
-        ANIO_INI, ANIO_FIN = st.sidebar.slider('Selecciona los años en los cuáles buscar:', 2021, 2024, (2021, 2022))
+        # Cambia las fechas de año máximas y mínimas según los archivos que hayan
+        self.ANIO_INICIO, self.ANIO_FINAL = st.sidebar.slider('Selecciona los años en los cuáles buscar:',
+                                               self.ANIO_INICIO, self.ANIO_FINAL, (self.ANIO_INICIO, self.ANIO_FINAL))
 
         # INICIALIZAR VARIABLES EN SESSION STATE----------------------
-        if "anio_ini" not in st.session_state or st.session_state.get("ANIO_INI") != ANIO_INI:
-            st.session_state.ANIO_INI = ANIO_INI
-            st.session_state.df_opciones = self.obtener_filtrado_de_programas(ANIO_INI)
+        if "anio_ini" not in st.session_state or st.session_state.get("ANIO_INI") != self.ANIO_INICIO:
+            st.session_state.ANIO_INI = self.ANIO_INICIO
+            st.session_state.ANIO_FINAL = self.ANIO_FINAL
+            st.session_state.df_opciones = self.obtener_filtrado_de_programas(self.ANIO_INICIO)
 
         if "df_filtrado" not in st.session_state:
             st.session_state.df_filtrado = st.session_state.df_opciones
@@ -116,10 +125,8 @@ class Menu:
                     st.success("¡Su resultado estará en la carpeta de este proyecto! :hugging_face: :money_mouth_face::money_mouth_face:")
 
     def obtener_filtrado_de_programas(self, ANIO_INI):
-        #FIXME: SE PUEDE CAMBIAR LA VARIABLE "RUTA" POR UNA RUTA FIJA COMO "C:/SNIES_EXTRACTOR/inputs/new/admitidos2021.xlsx"
-        # SOLO SI SE ASEGURA QUE DICHO ARCHIVO SIEMPRE VA A ESTAR DURANTE TODO EL CÓDIGO.
         anio = str(ANIO_INI)
-        RUTA = "C:/SNIES_EXTRACTOR/inputs/new/ADMITIDOS" + anio + ".xlsx"
+        RUTA = "C:/SNIES_EXTRACTOR/inputs/admitidos" + anio +".xlsx"
         df = pd.read_excel(RUTA, usecols=["PROGRAMA ACADÉMICO", "INSTITUCIÓN DE EDUCACIÓN SUPERIOR (IES)",
                                           "CÓDIGO SNIES DEL PROGRAMA", "NIVEL DE FORMACIÓN", "IES_PADRE",
                                           "PRINCIPAL O SECCIONAL"] )
