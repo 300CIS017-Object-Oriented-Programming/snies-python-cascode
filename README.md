@@ -13,10 +13,17 @@ El objetivo principal de este proyecto es facilitar la carga, procesamiento y ex
 El sistema está estructurado en tres componentes principales:
 
 1. **Interfaz de Usuario (Streamlit)**: Una interfaz gráfica donde los usuarios pueden interactuar con el sistema para cargar y procesar los archivos según un filtrado de palabras claves y rango de años e incluso descargar los resultados.
-![alt text]({28FC52DA-B624-4CDB-9701-B02D4C100E23}.png)
-![alt text]({9012354E-F954-4E04-815D-2A21A849132D}.png)
-![alt text]({C3887B82-D4B5-42AF-A867-3307DA009F94}.png)
-![alt text]({4904D139-BDDF-4875-BDE3-4D8E251D33B3}.png)
+![img.png](img/img.png)
+![img_1.png](img/img_1.png)
+![img_2.png](img/img_2.png)
+![img_3.png](img/img_3.png)
+![img_4.png](img/img_4.png)
+![img_5.png](img/img_5.png)
+![img_6.png](img/img_6.png)
+![img_7.png](img/img_7.png)
+![img_8.png](img/img_8.png)
+![img_9.png](img/img_9.png)
+
 2. **Controlador SNIES**: La capa lógica que maneja las interacciones entre la interfaz de usuario y la lógica de negocio, como la carga de archivos y el procesamiento de los datos.
 3. **Gestor de Archivos**: Responsable de leer los archivos de Excel, procesarlos según el tipo de dato y año, y generar un archivo de resultados consolidado.
 
