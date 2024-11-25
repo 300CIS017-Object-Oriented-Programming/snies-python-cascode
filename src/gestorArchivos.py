@@ -7,7 +7,7 @@ class GestorArchivos:
     def leer_archivo(self, RUTA_BASE, anio, dict_programas_academicos, atributo_del_archivo, primera_vez):
 
         ruta_completa = RUTA_BASE + atributo_del_archivo + anio + ".xlsx"
-        print(f"La ruta del archivo es \n{ruta_completa}")
+        print(f"Leyendo el archivo \n{ruta_completa}")
         df = pd.read_excel(ruta_completa)
         df = self.convertir_columna_to_int64(df)
 
@@ -62,7 +62,6 @@ class GestorArchivos:
             lista_consolidados_a_combinar = []
 
             for anio, df_consolidado_actual in dict_programas_academicos[cod_prog_actual].dict_consolidados.items():
-                print(f"El consolidado actual es del ano: {anio}")
                 lista_consolidados_a_combinar.append(df_consolidado_actual)
 
             df_consolidados_por_programa = pd.concat(lista_consolidados_a_combinar, ignore_index=True)
@@ -78,7 +77,6 @@ class GestorArchivos:
 
         # FIXME: MANEJAR EL CASO EN QUE PROBABLEENTE ESTÉ VACÍO EL DATAFRAME
         df_final.to_excel("Resultados.xlsx")
-        print("Probando")
 
     def convertir_columna_to_int64(self, df):
         df["CÓDIGO SNIES DEL PROGRAMA"] = df["CÓDIGO SNIES DEL PROGRAMA"].astype(str).str.strip()
