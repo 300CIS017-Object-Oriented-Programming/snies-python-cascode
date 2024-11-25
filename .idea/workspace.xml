@@ -5,9 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="04274f93-687d-4f9a-8807-2ec1983601b8" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Resultados.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/Resultados.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/graficas.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/graficas.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sniesController.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/sniesController.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/view.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/view.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -48,7 +49,7 @@
     "Python.view.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "carlos__burg__feature__visualizacion__datos",
+    "git-widget-placeholder": "main",
     "last_opened_file_path": "C:/Users/Carlos Burgos/gitProjects/snies-python-cascode",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",

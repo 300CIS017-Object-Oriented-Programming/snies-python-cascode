@@ -136,9 +136,19 @@ class Menu:
     def obtener_filtrado_de_programas(self, ANIO_INI):
         anio = str(ANIO_INI)
         RUTA = "C:/SNIES_EXTRACTOR/inputs/admitidos" + anio +".xlsx"
-        df = pd.read_excel(RUTA, usecols=["PROGRAMA ACADÉMICO", "INSTITUCIÓN DE EDUCACIÓN SUPERIOR (IES)",
-                                          "CÓDIGO SNIES DEL PROGRAMA", "NIVEL DE FORMACIÓN", "IES_PADRE",
-                                          "PRINCIPAL O SECCIONAL"] )
+        df = pd.read_excel(RUTA)
+
+        renombrar_columnas = {
+            "IES PADRE": "IES_PADRE",
+            "TIPO IES": "PRINCIPAL O SECCIONAL",
+        }
+
+        df.rename(columns=renombrar_columnas, inplace=True)
+
+        df = df[ ["PROGRAMA ACADÉMICO", "INSTITUCIÓN DE EDUCACIÓN SUPERIOR (IES)",
+                              "CÓDIGO SNIES DEL PROGRAMA",
+                              "NIVEL DE FORMACIÓN", "IES_PADRE", "PRINCIPAL O SECCIONAL"] ]
+
         df = df.drop_duplicates(subset=["PROGRAMA ACADÉMICO", "INSTITUCIÓN DE EDUCACIÓN SUPERIOR (IES)", "CÓDIGO SNIES DEL PROGRAMA"])
         df = df.reset_index(drop=True)
 
@@ -216,17 +226,17 @@ class Menu:
         col1, col2 = st.columns(2)
 
         with col1:
-            if st.button("Iniciar Función 1"):
-                st.session_state.active_function = "funcion_1"
+            if st.button("Gráfica de líneas"):
+                st.session_state.active_function = "Gráfico_de_líneas"
 
         with col2:
-            if st.button("Iniciar Función 2"):
-                st.session_state.active_function = "funcion_2"
+            if st.button("Gráfico de barras"):
+                st.session_state.active_function = "Gráfico_de_barras"
 
         # Ejecutar la función activa
-        if st.session_state.active_function == "funcion_1":
+        if st.session_state.active_function == "Gráfico_de_líneas":
             self.graficosNew.grafica_linea(st.session_state.df_consolidado)
-        elif st.session_state.active_function == "funcion_2":
+        elif st.session_state.active_function == "Gráfico_de_barras":
             self.graficosNew.grafica_barras(st.session_state.df_consolidado)
         else:
             st.write("Selecciona una función para iniciar.")

@@ -102,7 +102,6 @@ class graficasEstadisticas:
 
         anios_list = archivo_subido[columna_eje_x]
         df_resultante = pd.DataFrame({columna_eje_x: anios_list})
-        st.write(df)
 
         if metrica_seleccionada in archivo_subido.columns and seleccionada in archivo_subido.columns:
             # Agrupar datos por Año y la variable seleccionada
@@ -112,9 +111,7 @@ class graficasEstadisticas:
             df_resultante,
             x=columna_eje_x,  # Eje X
 
-            y=df_resultante[columna_eje_x],  # Eje Y
-
-            #y=metrica_seleccionada,  # Eje Y (de la versión vieja)
+            y=metrica_seleccionada,  # Eje Y (de la versión vieja)
 
             color=seleccionada,  # Agrupación por color
             barmode="stack",  # Barras apiladas
