@@ -92,3 +92,4 @@ class GestorArchivos:
         df.loc[:, "SEXO"] = df["SEXO"].replace({'Femenino': 'Mujer', 'Masculino': 'Hombre'})
 
         return df
+
