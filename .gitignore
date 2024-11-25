@@ -1,2 +1,8 @@
-__pycache__/
+<<<<<<< HEAD
+.venv
+__pycache__
 *.pyc
+=======
+.venv/
+src/__pycache__/
+>>>>>>> 58df9f8 (Tratando de cambiarse a Backup)
