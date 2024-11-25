@@ -1,6 +1,8 @@
-import streamlit as st
-import os
 from sniesController import SniesController
+import pandas as pd
+import streamlit as st
+from streamlit import button
+import os
 
 class Menu:
     def __init__(self):
@@ -44,15 +46,87 @@ class Menu:
         """)
 
     def procesar_datos(self):
+        # BARRA LATERAL: --------------------------------------------
+        st.sidebar.title("Filtrar programas académicos")
+        filtro_nombre = st.sidebar.text_input("Escriba una palabra para buscar en los programas académicos disponibles: ",
+                                              placeholder="Por ej. 'Medicina', 'Ingeniería'")
+        st.sidebar.write("Nota: si al filtrar no encuentra su programa académico, preste atención a las tildes (´) 	"
+                         ":nerd_face:, puede que su Programa Académico esté guardado con ellas. :stuck_out_tongue_winking_eye:")
+
+        st.sidebar.title('Entrada de datos para el procesamiento')
+        #FIXME: CAMBIAR LAS FECHAS MÁXIMAS Y MÍNIMAS SEGÚN LOS ARCHIVOS QUE HAYAN CARGADOS
+        ANIO_INI, ANIO_FIN = st.sidebar.slider('Selecciona los años en los cuáles buscar:', 2021, 2024, (2021, 2022))
+
+        # INICIALIZAR VARIABLES EN SESSION STATE----------------------
+        if "anio_ini" not in st.session_state or st.session_state.get("ANIO_INI") != ANIO_INI:
+            st.session_state.ANIO_INI = ANIO_INI
+            st.session_state.df_opciones = self.obtener_filtrado_de_programas(ANIO_INI)
+
+        if "df_filtrado" not in st.session_state:
+            st.session_state.df_filtrado = st.session_state.df_opciones
+
+        # PANTALLA PRINCIPAL: ---------------------------------------
         st.title("Procesar Datos Académicos")
-        anio_inicio = st.number_input("Año de inicio:", min_value=2000, max_value=2025, value=2021)
-        anio_final = st.number_input("Año final:", min_value=2000, max_value=2025, value=2022)
-        codigos_snies = st.text_input("Códigos SNIES (separados por comas):", "1042, 1043")
-        if st.button("Procesar Datos"):
-            lista_cod_snies = [int(cod.strip()) for cod in codigos_snies.split(",")]
-            with st.spinner('Procesando...'):
-                self.controladorSnies.procesarDatos(anio_inicio, anio_final, lista_cod_snies)
-                st.success("¡Datos procesados con éxito!")
+
+        if not st.session_state.df_filtrado.empty:
+            st.session_state.df_filtrado = st.session_state.df_opciones
+
+
+            if filtro_nombre:
+                st.session_state.df_filtrado = st.session_state.df_filtrado[
+                    st.session_state.df_filtrado["PROGRAMA ACADÉMICO"].str.contains(filtro_nombre, case=False, na=False)]
+                st.session_state.df_filtrado.reset_index(drop=True, inplace=True)
+
+            # Crea un set para los codigos snies
+            if "filas_seleccionadas" not in st.session_state:
+                st.session_state.filas_seleccionadas = set()
+
+            event = st.dataframe(
+                st.session_state.df_filtrado,
+                key="opciones_df",
+                on_select="rerun",
+                selection_mode="multi-row",
+                #hide_index=True,
+            )
+
+            if event.selection:
+                selected_rows = event.selection['rows']  # Filas seleccionadas
+                selected_snies = st.session_state.df_filtrado.loc[selected_rows, 'CÓDIGO SNIES DEL PROGRAMA'].tolist()
+                st.session_state.filas_seleccionadas.update(selected_snies)
+
+            # Filtrar los códigos seleccionados que aún están en el DataFrame filtrado
+            codigos_actuales = st.session_state.df_filtrado['CÓDIGO SNIES DEL PROGRAMA'].tolist()
+            """codigos_seleccionados_visibles = [snies for snies in st.session_state.filas_seleccionadas if
+                                              snies in codigos_actuales]"""
+
+
+            if st.button("Limpiar listado de códigos SNIES"):
+                st.session_state.filas_seleccionadas.clear()
+                st.session_state.selected_values = []
+
+            list_filas_seleccionadas = list(st.session_state.filas_seleccionadas)
+            # Mostrar la lista resultante en Streamlit
+            st.write(f"Códigos SNIES seleccionados: {list_filas_seleccionadas}")
+
+            if list_filas_seleccionadas and st.button("Procesar datos"):
+                self.controladorSnies.procesarDatos(ANIO_INI, ANIO_FIN, list_filas_seleccionadas)
+                with st.spinner('Procesando...'):
+                    self.controladorSnies.procesarDatos(ANIO_INI, ANIO_FIN, list_filas_seleccionadas)
+                    st.success("¡Datos procesados con éxito!")
+                    st.success("¡Su resultado estará en la carpeta de este proyecto! :hugging_face: :money_mouth_face::money_mouth_face:")
+
+    def obtener_filtrado_de_programas(self, ANIO_INI):
+        #FIXME: SE PUEDE CAMBIAR LA VARIABLE "RUTA" POR UNA RUTA FIJA COMO "C:/SNIES_EXTRACTOR/inputs/new/admitidos2021.xlsx"
+        # SOLO SI SE ASEGURA QUE DICHO ARCHIVO SIEMPRE VA A ESTAR DURANTE TODO EL CÓDIGO.
+        anio = str(ANIO_INI)
+        RUTA = "C:/SNIES_EXTRACTOR/inputs/new/ADMITIDOS" + anio + ".xlsx"
+        df = pd.read_excel(RUTA, usecols=["PROGRAMA ACADÉMICO", "INSTITUCIÓN DE EDUCACIÓN SUPERIOR (IES)",
+                                          "CÓDIGO SNIES DEL PROGRAMA", "NIVEL DE FORMACIÓN", "IES_PADRE",
+                                          "PRINCIPAL O SECCIONAL"] )
+        df = df.drop_duplicates(subset=["PROGRAMA ACADÉMICO", "INSTITUCIÓN DE EDUCACIÓN SUPERIOR (IES)", "CÓDIGO SNIES DEL PROGRAMA"])
+        df = df.reset_index(drop=True)
+
+        return df
 
     def mostrar_resultados(self):
         st.title("Resultados Consolidados")
