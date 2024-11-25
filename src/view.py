@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 from sniesController import SniesController
 
 class Menu:
@@ -55,8 +56,15 @@ class Menu:
 
     def mostrar_resultados(self):
         st.title("Resultados Consolidados")
-        with open("Resultados.xlsx", "rb") as file:
-            st.download_button(label="Descargar Resultados",
-                               data=file,
-                               file_name="Resultados.xlsx",
-                               mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+        # Verifica si el archivo existe y no está vacío
+        if os.path.exists("Resultados.xlsx") and os.path.getsize("Resultados.xlsx") > 0:
+            with open("Resultados.xlsx", "rb") as file:
+                st.download_button(
+                    label="Descargar Resultados",
+                    data=file,
+                    file_name="Resultados.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+        else:
+            st.warning("No hay resultados disponibles para descargar.")
