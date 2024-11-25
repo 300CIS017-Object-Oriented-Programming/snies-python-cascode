@@ -7,10 +7,12 @@ class graficasEstadisticas:
 
         pass
 
+
     def grafica_linea(self, df):
         st.title("Gráfico de Líneas Interactivo")
 
         archivo_subido = df
+
 
         archivo_subido['AÑO']= archivo_subido['AÑO'].astype(str)
         archivo_subido['SEMESTRES'] = archivo_subido['AÑO'].astype(str) + archivo_subido['SEMESTRE'].astype(str)
@@ -62,12 +64,14 @@ class graficasEstadisticas:
         df_resultante.set_index(columna_eje_x, inplace=True)
         st.line_chart(df_resultante)
 
+
     def grafica_barras(self, df):
         st.title("Gráfico de Líneas Interactivo con Plotly")
 
         archivo_subido = df
 
         #archivo_subido['AÑO']= archivo_subido['AÑO'].astype(str)
+
         archivo_subido['SEMESTRES'] = archivo_subido['AÑO'].astype(str) + archivo_subido['SEMESTRE'].astype(str)
         opciones = ["AÑO", "SEMESTRES"]
         columna_eje_x = st.selectbox("Selecciona una variable", opciones)
@@ -99,6 +103,7 @@ class graficasEstadisticas:
         anios_list = archivo_subido[columna_eje_x]
         df_resultante = pd.DataFrame({columna_eje_x: anios_list})
         st.write(df)
+
         if metrica_seleccionada in archivo_subido.columns and seleccionada in archivo_subido.columns:
             # Agrupar datos por Año y la variable seleccionada
             df_resultante = archivo_subido.groupby([columna_eje_x, seleccionada], as_index=False)[metrica_seleccionada].sum()
@@ -106,7 +111,11 @@ class graficasEstadisticas:
         fig = px.bar(
             df_resultante,
             x=columna_eje_x,  # Eje X
+
             y=df_resultante[columna_eje_x],  # Eje Y
+
+            #y=metrica_seleccionada,  # Eje Y (de la versión vieja)
+
             color=seleccionada,  # Agrupación por color
             barmode="stack",  # Barras apiladas
             title="Gráfico de Barras ",
