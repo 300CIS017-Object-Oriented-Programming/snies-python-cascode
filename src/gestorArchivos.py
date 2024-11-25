@@ -16,6 +16,7 @@ class GestorArchivos:
 
         for cod_snies in list_cod_snies:
             df_filtrado = df[df["CÓDIGO SNIES DEL PROGRAMA"] == cod_snies]
+            df_filtrado = self.convertir_columna_sexo(df_filtrado)
             index_columna_inicio_exclusion = df.columns.get_loc("ID SEXO")
 
 
@@ -32,7 +33,6 @@ class GestorArchivos:
         for cod_snies in list_cod_snies:
             df_filtrado = df[df["CÓDIGO SNIES DEL PROGRAMA"] == cod_snies]
             df_filtrado = df_filtrado.reset_index(drop=True)
-            df_filtrado = self.cambiar_nombre_sexo(df_filtrado)
 
 
             if atributo_del_archivo == "inscritos":
@@ -88,6 +88,7 @@ class GestorArchivos:
 
         return df
 
-    def cambiar_nombre_sexo(self, df):
-        df["SEXO"] = df["SEXO"].replace({'Femenino':'Mujer', 'Masculino':'Hombre'})
+    def convertir_columna_sexo(self, df):
+        df.loc[:, "SEXO"] = df["SEXO"].replace({'Femenino': 'Mujer', 'Masculino': 'Hombre'})
+
         return df

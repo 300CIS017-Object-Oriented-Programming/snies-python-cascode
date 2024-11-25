@@ -27,47 +27,56 @@ class Menu:
 
         if "anio_ini" not in st.session_state or st.session_state.get("ANIO_INI") != ANIO_INI:
             st.session_state.ANIO_INI = ANIO_INI
-            df_opciones = self.obtener_filtrado_de_programas(ANIO_INI)
+            st.session_state.df_opciones = self.obtener_filtrado_de_programas(ANIO_INI)
 
-        df_filtrado = df_opciones
+        if "df_filtrado" not in st.session_state:
+            st.session_state.df_filtrado = st.session_state.df_opciones
 
-        if not df_filtrado.empty:
 
-            st.session_state.df_filtrado = df_filtrado
+        if not st.session_state.df_filtrado.empty:
+            st.session_state.df_filtrado = st.session_state.df_opciones
 
-            if "df_filtrado" not in st.session_state:
-                st.session_state.df_filtrado = df_filtrado
 
             if filtro_nombre:
-                st.session_state.df_filtrado = st.session_state.df_filtrado[st.session_state.df_filtrado["PROGRAMA ACADÉMICO"].str.contains(filtro_nombre, case=False, na=False)]
+                st.session_state.df_filtrado = st.session_state.df_filtrado[
+                    st.session_state.df_filtrado["PROGRAMA ACADÉMICO"].str.contains(filtro_nombre, case=False, na=False)]
+                st.session_state.df_filtrado.reset_index(drop=True, inplace=True)
+
+            # Crea un set para los codigos snies
+            if "filas_seleccionadas" not in st.session_state:
+                st.session_state.filas_seleccionadas = set()
 
             event = st.dataframe(
                 st.session_state.df_filtrado,
                 key="opciones_df",
                 on_select="rerun",
                 selection_mode="multi-row",
-                hide_index=True,
+                #hide_index=True,
             )
-            #st.write("Seleccionados: ", event.selection)
 
             if event.selection:
                 selected_rows = event.selection['rows']  # Filas seleccionadas
-                selected_column = 'CÓDIGO SNIES DEL PROGRAMA'  # Nombre de la columna de la que queremos los valores
+                selected_snies = st.session_state.df_filtrado.loc[selected_rows, 'CÓDIGO SNIES DEL PROGRAMA'].tolist()
+                st.session_state.filas_seleccionadas.update(selected_snies)
 
-                # Obtener los valores de la columna 'CODIGO SNIES DEL PROGRAMA' para las filas seleccionadas
-                selected_values = df_filtrado.loc[selected_rows, selected_column].tolist()
-
-                # Mostrar la lista resultante en Streamlit
-                st.write(f"Valores seleccionados de la columna '{selected_column}': {selected_values}")
-
-
+            # Filtrar los códigos seleccionados que aún están en el DataFrame filtrado
+            codigos_actuales = st.session_state.df_filtrado['CÓDIGO SNIES DEL PROGRAMA'].tolist()
+            """codigos_seleccionados_visibles = [snies for snies in st.session_state.filas_seleccionadas if
+                                              snies in codigos_actuales]"""
 
 
-        # FIXME: ESTO DEBE SER UN INPUT EN EL STREAMLIT
-        # Se definen los programas académicos a buscar y se agregan al mapa
-        lista_cod_snies = [1042, 1043]
+            if st.button("Limpiar selección"):
+                st.session_state.filas_seleccionadas.clear()
+                st.session_state.selected_values = []
 
-        #self.controladorSnies.procesarDatos(ANIO_INI, ANIO_FIN, lista_cod_snies)
+            list_filas_seleccionadas = list(st.session_state.filas_seleccionadas)
+            # Mostrar la lista resultante en Streamlit
+            st.write(f"Códigos SNIES seleccionados: {list_filas_seleccionadas}")
+
+            if list_filas_seleccionadas and st.button("Procesar datos"):
+                self.controladorSnies.procesarDatos(ANIO_INI, ANIO_FIN, list_filas_seleccionadas)
+                st.write("Se procesó correctamente")
+
 
 
     def obtener_filtrado_de_programas(self, ANIO_INI):
@@ -79,7 +88,7 @@ class Menu:
                                           "PRINCIPAL O SECCIONAL"] )
         # FIXME: ESTÁ BORRANDO LOS REPETIDOS. Y YA QUE HAY VARIOS PROGRAMAS QUE SE LLAMAN IGUAL EN DIFERENTES UNIVERSIDADES
         # FIXME: ESTÁ BORRANDO DE LAS OTRAS UNIVERSIDADES TAMBIÉN
-        df = df.drop_duplicates(subset="PROGRAMA ACADÉMICO")
+        df = df.drop_duplicates(subset=["PROGRAMA ACADÉMICO", "INSTITUCIÓN DE EDUCACIÓN SUPERIOR (IES)", "CÓDIGO SNIES DEL PROGRAMA"])
         df = df.reset_index(drop=True)
 
         return df
