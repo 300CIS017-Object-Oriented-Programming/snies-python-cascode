@@ -1,17 +1,23 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 class graficasEstadisticas:
     def __init__(self):
 
         pass
 
-    def grafica_linea(self):
-        st.title("Gráfico de Líneas Interactivo con Plotly")
+    def grafica_linea(self, ruta_completa):
+        st.title("Gráfico de Líneas Interactivo")
 
-        ruta_completa = "src/Resultados.xlsx"
+        archivo_subido = pd.read_excel(str(ruta_completa))
 
-        archivo_subido = pd.read_excel(ruta_completa)
+        archivo_subido['AÑO']= archivo_subido['AÑO'].astype(str)
+        archivo_subido['SEMESTRES'] = archivo_subido['AÑO'].astype(str) + archivo_subido['SEMESTRE'].astype(str)
+        opciones = ["AÑO", "SEMESTRES"]
+        columna_eje_x = st.selectbox("Selecciona una variable", opciones)
+
+        st.sidebar.title("Filtros")
 
         metricas_disponibles = [
             "INSCRITOS",
@@ -22,12 +28,6 @@ class graficasEstadisticas:
         metricas_seleccionadas = st.sidebar.multiselect(
             "Selecciona las métricas para graficar", metricas_disponibles, default=metricas_disponibles[:1])
 
-
-        archivo_subido['SEMESTRECOMPLETO'] = archivo_subido['AÑO'] + archivo_subido['SEMESTRE']
-        opciones = ["AÑO", "SEMESTRECOMPLETO"]
-        columna_eje_x = st.selectbox("Selecciona una variable", opciones)
-
-        st.sidebar.title("Filtros")
         columnas_filtro = [
             "INSTITUCIÓN DE EDUCACIÓN SUPERIOR (IES)",
             "DESC CINE CAMPO ESPECIFICO",
@@ -38,12 +38,12 @@ class graficasEstadisticas:
         filtros = {}
         for columna in columnas_filtro:
             if columna in archivo_subido.columns:
-                valores_unicos = archivo_subido[columna].dropna().unique()
-                seleccion = st.sidebar.selectbox(
+                archivo_subido.valores_unicos = archivo_subido[columna].dropna().unique()
+                st.session_state.seleccion = st.sidebar.selectbox(
                     f"Escoja una opción para {columna}",
-                    ["Todos"] + list(valores_unicos)
+                    ["Todos"] + list(archivo_subido.valores_unicos)
                 )
-                filtros[columna] = seleccion
+                filtros[columna] = st.session_state.seleccion
 
         datos_filtrados = archivo_subido.copy()
         for columna, seleccion in filtros.items():
@@ -62,3 +62,53 @@ class graficasEstadisticas:
         df_resultante.set_index(columna_eje_x, inplace=True)
         st.line_chart(df_resultante)
 
+    def grafica_barras(self, ruta_completa):
+        st.title("Gráfico de Líneas Interactivo con Plotly")
+
+        archivo_subido = pd.read_excel(str(ruta_completa))
+
+        archivo_subido['AÑO']= archivo_subido['AÑO'].astype(str)
+        archivo_subido['SEMESTRES'] = archivo_subido['AÑO'].astype(str) + archivo_subido['SEMESTRE'].astype(str)
+        opciones = ["AÑO", "SEMESTRES"]
+        columna_eje_x = st.selectbox("Selecciona una variable", opciones)
+
+        st.sidebar.title("Filtros")
+
+        metricas_disponibles = [
+            "INSCRITOS",
+            "GRADUADOS",
+            "MATRICULADOS",
+            "ADMITIDOS",
+        ]
+        metrica_seleccionada = st.sidebar.selectbox(
+            "Selecciona las métricas para graficar", metricas_disponibles)
+
+        columnas_opciones = [
+            "MODALIDAD",
+            "IES ACREDITADA",
+            "PROGRAMA ACADÉMICO",
+            "DESC CINE CAMPO ESPECIFICO",
+            "NIVEL DE FORMACIÓN",
+            "SEXO"
+        ]
+        seleccionada = st.sidebar.selectbox(
+            "Selecciona una opción:",
+            columnas_opciones   # Lista de opciones
+        )
+
+        if metrica_seleccionada in archivo_subido.columns and seleccionada in archivo_subido.columns:
+            # Agrupar datos por Año y la variable seleccionada
+            df_resultante = archivo_subido.groupby([columna_eje_x, seleccionada], as_index=False)[metrica_seleccionada].sum()
+
+        fig = px.bar(
+            df_resultante,
+            x=columna_eje_x,  # Eje X
+            y=metrica_seleccionada,  # Eje Y
+            color=seleccionada,  # Agrupación por color
+            barmode="stack",  # Barras apiladas
+            title="Gráfico de Barras ",
+            labels={metrica_seleccionada: "Cantidad", columna_eje_x: "Periodo", seleccionada: "Variable"}
+        )
+
+        # Mostrar el gráfico en Streamlit
+        st.plotly_chart(fig)
