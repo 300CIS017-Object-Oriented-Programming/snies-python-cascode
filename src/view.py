@@ -1,4 +1,5 @@
 from sniesController import SniesController
+from graficas import graficasEstadisticas
 import pandas as pd
 import streamlit as st
 from streamlit import button
@@ -7,6 +8,7 @@ import os
 class Menu:
     def __init__(self):
         self.controladorSnies = SniesController()
+        self.graficosNew = graficasEstadisticas()
 
 
         self.archivos_predeterminados = self.controladorSnies.listar_archivos_predeterminados()
@@ -19,7 +21,7 @@ class Menu:
     def mostrar_interfaz(self):
         st.set_page_config(page_title="Gestor SNIES", layout="wide")
         st.sidebar.title("Navegación")
-        page = st.sidebar.selectbox("Selecciona una página:", ["Inicio", "Carga de Archivos", "Procesar Datos", "Resultados"])
+        page = st.sidebar.selectbox("Selecciona una página:", ["Inicio", "Carga de Archivos", "Procesar Datos", "Resultados", "Visualizaciones"])
         if page == "Inicio":
             self.mostrar_inicio()
         elif page == "Carga de Archivos":
@@ -28,6 +30,8 @@ class Menu:
             self.procesar_datos()
         elif page == "Resultados":
             self.mostrar_resultados()
+        elif page == "Visualizaciones":
+            self.mostrar_visualizacion()
 
 
     def mostrar_carga_archivos(self):
@@ -118,9 +122,7 @@ class Menu:
             st.write(f"Códigos SNIES seleccionados: {list_filas_seleccionadas}")
 
             if list_filas_seleccionadas and st.button("Procesar datos"):
-                self.controladorSnies.procesarDatos(self.ANIO_INICIO, self.ANIO_FINAL, list_filas_seleccionadas)
                 with st.spinner('Procesando...'):
-
                     st.session_state.df_consolidado = self.controladorSnies.procesarDatos(self.ANIO_INICIO, self.ANIO_FINAL, list_filas_seleccionadas)
 
 
@@ -172,8 +174,6 @@ class Menu:
             if 'formatos' not in st.session_state:
                 st.session_state.formatos = []
 
-            st.write(f"Formatos seleccionados a exportar: {st.session_state.formatos}")
-
             # Botón para ejecutar la exportación
             if st.button("Exportar archivos"):
                 if st.session_state.export_xlsx:
@@ -206,5 +206,28 @@ class Menu:
             filename = "Resultados.csv"
             dataframe.to_csv(filename, index=False)
             st.success(f"Archivo exportado como {filename} correctamente.")
+
+    def mostrar_visualizacion(self):
+
+        if "active_function" not in st.session_state:
+            st.session_state.active_function = None
+
+        # Manejo de botones
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("Iniciar Función 1"):
+                st.session_state.active_function = "funcion_1"
+
+        with col2:
+            if st.button("Iniciar Función 2"):
+                st.session_state.active_function = "funcion_2"
+
+        # Ejecutar la función activa
+        if st.session_state.active_function == "funcion_1":
+            self.graficosNew.grafica_linea(st.session_state.df_consolidado)
+        elif st.session_state.active_function == "funcion_2":
+            self.graficosNew.grafica_barras(st.session_state.df_consolidado)
         else:
-            st.error("Formato no soportado.")
+            st.write("Selecciona una función para iniciar.")
+
