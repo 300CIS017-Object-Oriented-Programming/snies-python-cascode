@@ -3,11 +3,11 @@ from programaAcademico import ProgramaAcademico
 import os
 import shutil
 import re
+import pandas as pd
 
 class SniesController:
     def __init__(self):
-
-        pass
+        self.df_consolidado = pd.DataFrame()
 
 
     def procesarDatos(self, ANIO_INICIO, ANIO_FINAL, LISTA_COD_SNIES):
@@ -20,7 +20,7 @@ class SniesController:
             programa_academico_df = ProgramaAcademico()
             dict_programas_academicos[cod_snies] = programa_academico_df
 
-        RUTA_BASE = "C:/SNIES_EXTRACTOR/inputs/new/"
+        RUTA_BASE = "C:/SNIES_EXTRACTOR/inputs/"
 
         print("Se procederá a buscar en el rango de anos: ", ANIO_INICIO, "-" , ANIO_FINAL)
 
@@ -38,7 +38,9 @@ class SniesController:
             gestor_archivos_obj.leer_archivo(RUTA_BASE, anioString, dict_programas_academicos, "primerCurso", False)
             gestor_archivos_obj.leer_archivo(RUTA_BASE, anioString, dict_programas_academicos, "graduados", False)
 
-        df_final = gestor_archivos_obj.generar_df_consolidado(dict_programas_academicos)
+        df_consolidado = gestor_archivos_obj.generar_df_consolidado(dict_programas_academicos)
+        return df_consolidado
+
 
 
     def listar_archivos_predeterminados(self):

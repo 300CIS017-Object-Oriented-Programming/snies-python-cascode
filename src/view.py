@@ -8,11 +8,13 @@ class Menu:
     def __init__(self):
         self.controladorSnies = SniesController()
 
+
         self.archivos_predeterminados = self.controladorSnies.listar_archivos_predeterminados()
         [anio_min, anio_max] = self.controladorSnies.obtener_anio_minimo_y_maximo(self.archivos_predeterminados)
 
         self.ANIO_INICIO = anio_min
         self.ANIO_FINAL = anio_max
+
 
     def mostrar_interfaz(self):
         st.set_page_config(page_title="Gestor SNIES", layout="wide")
@@ -26,6 +28,7 @@ class Menu:
             self.procesar_datos()
         elif page == "Resultados":
             self.mostrar_resultados()
+
 
     def mostrar_carga_archivos(self):
         st.title("Carga de Archivos")
@@ -45,12 +48,14 @@ class Menu:
             archivos_guardados = self.controladorSnies.cargar_archivos_nuevos(archivos_subidos)
             st.success(f"Archivos cargados correctamente: {', '.join(archivos_guardados)}")
 
+
     def mostrar_inicio(self):
         st.title("Bienvenido al Gestor SNIES")
         st.write("""
         Esta aplicación facilita la consolidación de datos académicos. 
         Utiliza el menú de la izquierda para navegar entre las secciones.
         """)
+
 
     def procesar_datos(self):
         # BARRA LATERAL: --------------------------------------------
@@ -103,11 +108,6 @@ class Menu:
                 selected_snies = st.session_state.df_filtrado.loc[selected_rows, 'CÓDIGO SNIES DEL PROGRAMA'].tolist()
                 st.session_state.filas_seleccionadas.update(selected_snies)
 
-            # Filtrar los códigos seleccionados que aún están en el DataFrame filtrado
-            codigos_actuales = st.session_state.df_filtrado['CÓDIGO SNIES DEL PROGRAMA'].tolist()
-            """codigos_seleccionados_visibles = [snies for snies in st.session_state.filas_seleccionadas if
-                                              snies in codigos_actuales]"""
-
 
             if st.button("Limpiar listado de códigos SNIES"):
                 st.session_state.filas_seleccionadas.clear()
@@ -118,11 +118,18 @@ class Menu:
             st.write(f"Códigos SNIES seleccionados: {list_filas_seleccionadas}")
 
             if list_filas_seleccionadas and st.button("Procesar datos"):
-                self.controladorSnies.procesarDatos(ANIO_INI, ANIO_FIN, list_filas_seleccionadas)
+                self.controladorSnies.procesarDatos(self.ANIO_INICIO, self.ANIO_FINAL, list_filas_seleccionadas)
                 with st.spinner('Procesando...'):
-                    self.controladorSnies.procesarDatos(ANIO_INI, ANIO_FIN, list_filas_seleccionadas)
+
+                    st.session_state.df_consolidado = self.controladorSnies.procesarDatos(self.ANIO_INICIO, self.ANIO_FINAL, list_filas_seleccionadas)
+
+
                     st.success("¡Datos procesados con éxito!")
-                    st.success("¡Su resultado estará en la carpeta de este proyecto! :hugging_face: :money_mouth_face::money_mouth_face:")
+                    st.success("¡Vaya a la página de Resultados para exportar sus resultados! :hugging_face: :money_mouth_face::money_mouth_face:")
+
+
+
+
 
     def obtener_filtrado_de_programas(self, ANIO_INI):
         anio = str(ANIO_INI)
@@ -135,17 +142,69 @@ class Menu:
 
         return df
 
+
     def mostrar_resultados(self):
         st.title("Resultados Consolidados")
 
-        # Verifica si el archivo existe y no está vacío
-        if os.path.exists("Resultados.xlsx") and os.path.getsize("Resultados.xlsx") > 0:
-            with open("Resultados.xlsx", "rb") as file:
-                st.download_button(
-                    label="Descargar Resultados",
-                    data=file,
-                    file_name="Resultados.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
+        if 'df_consolidado' not in st.session_state:
+            st.session_state.df_consolidado = pd.DataFrame()
+
+        if not st.session_state.df_consolidado.empty:
+            # OPCIONES PARA ELEGIR CÓMO EXPORTAR LOS ARCHIVOS
+
+            if "export_xlsx" not in st.session_state:
+                st.session_state.export_xlsx = False
+            if "export_json" not in st.session_state:
+                st.session_state.export_json = False
+            if "export_csv" not in st.session_state:
+                st.session_state.export_csv = False
+
+                # Mostrar los checkboxes para seleccionar formatos de exportación
+            st.markdown("### Selecciona los formatos para exportar los datos procesados:")
+
+            st.session_state.export_xlsx = st.checkbox("Exportar a Excel (.xlsx)",
+                                                       value=st.session_state.export_xlsx)
+            st.session_state.export_json = st.checkbox("Exportar a JSON (.json)",
+                                                       value=st.session_state.export_json)
+            st.session_state.export_csv = st.checkbox("Exportar a CSV (.csv)",
+                                                      value=st.session_state.export_csv)
+
+            if 'formatos' not in st.session_state:
+                st.session_state.formatos = []
+
+            st.write(f"Formatos seleccionados a exportar: {st.session_state.formatos}")
+
+            # Botón para ejecutar la exportación
+            if st.button("Exportar archivos"):
+                if st.session_state.export_xlsx:
+                    st.session_state.formatos.append("xlsx")
+                if st.session_state.export_json:
+                    st.session_state.formatos.append("json")
+                if st.session_state.export_csv:
+                    st.session_state.formatos.append("csv")
+
+                if st.session_state.formatos:
+                    self.exportar_datos(st.session_state.df_consolidado, st.session_state.formatos)
+                    st.session_state.formatos = []
+                else:
+                    st.warning("Selecciona al menos un formato para exportar.")
+
+
         else:
-            st.warning("No hay resultados disponibles para descargar.")
+            st.write("Aún no hay datos para exportar :disappointed_relieved: :sleepy:")
+
+    def exportar_datos(self, dataframe, formato):
+        if "xlsx" in formato:
+            filename = "Resultados.xlsx"
+            dataframe.to_excel(filename, index=False)
+            st.success(f"Archivo exportado como {filename} correctamente.")
+        if "json" in formato:
+            filename = "Resultados.json"
+            dataframe.to_json(filename, orient="records")
+            st.success(f"Archivo exportado como {filename} correctamente.")
+        if "csv" in formato:
+            filename = "Resultados.csv"
+            dataframe.to_csv(filename, index=False)
+            st.success(f"Archivo exportado como {filename} correctamente.")
+        else:
+            st.error("Formato no soportado.")
